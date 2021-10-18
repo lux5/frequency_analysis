@@ -107,9 +107,8 @@ dict_rc = {
     'mathtext.fontset': 'custom',
     'mathtext.default': 'regular',
     'patch.linewidth': 0.6,
-#     'savefig.dpi': 1000,
+    'savefig.dpi': 140,
     'savefig.facecolor': 'white',
-#     'savefig.format': 'pdf',
     'xtick.major.pad': 2.0,
     'xtick.major.size': 4.0,
     'xtick.major.width': 0.6,
@@ -123,8 +122,6 @@ dict_rc = {
     'ytick.minor.width': 0.48,
     'ytick.minor.visible': True,
     'axes.titlecolor': 'black',
-#     'xtick.labelcolor': 'black',
-#     'ytick.labelcolor': 'black',
 }
 
 # Apply the above matplotlib settings
