@@ -1,5 +1,5 @@
 
-from typing import Tuple, Union
+from typing import Sequence, Tuple, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ pd.set_option('display.max_columns', None)
 
 
 def fah(
-        x: np.ndarray,
+        x: Union[Sequence[float], np.ndarray, pd.Series],
         bins: int = 10,
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
@@ -108,7 +108,7 @@ def fah(
 
 
 def fal(
-        x: np.ndarray,
+        x: Union[Sequence[float], np.ndarray, pd.Series],
         bins: int = 10,
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
