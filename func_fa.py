@@ -61,7 +61,6 @@ def fah(
     https://docs.scipy.org/doc/scipy/reference/reference/stats.html
     """
     x = np.array(x)
-    sample_size, init_loc, init_scale = x.size, x.mean(), x.std()
     freq, brk = np.histogram(x, bins=bins)
     bin_size = np.diff(brk).mean()
     x_mid = (brk + np.roll(brk, shift=-1))[:-1] / 2
@@ -81,12 +80,13 @@ def fah(
     )
     rp = np.array([1.5, 2, 2.5, 3, 4, 5, 10, 20, 25, 50, 75, 100, 150, 200, 250, 500])
     res_df = pd.DataFrame({'Annual return period': rp})
+    n, (x_min, x_max), x_mean, x_var, *_ = stats.describe(x)
     for name, dist in dists.items():
-        *shape, loc, scale = dist.fit(data=x, loc=init_loc, scale=init_scale)
+        *shape, loc, scale = dist.fit(data=x, loc=x_mean, scale=x_var**.5)
         df.at[name, 'shape'] = shape
         df.loc[name, ['loc', 'scale']] = loc, scale
         dist_frozen = dist(*shape, loc=loc, scale=scale)
-        freq_pred = dist_frozen.pdf(x_mid) * bin_size * sample_size
+        freq_pred = dist_frozen.pdf(x_mid) * bin_size * n
         df.at[name, 'Dist_frozen'] = dist_frozen
         df.at[name, 'SSE'] = ((freq - freq_pred) ** 2).sum()
         res_df = res_df.join(pd.DataFrame({name: dist_frozen.isf(1/rp)}))
@@ -94,8 +94,8 @@ def fah(
     res_df = res_df.loc[:, ['Annual return period'] + df.index.tolist()]
     if graph:
         best_dist = f'{df.index[0]} distribution'
-        x_plot = np.linspace(x.min(), x.max(), 100)
-        y_pred = df.iloc[0, :].at['Dist_frozen'].pdf(x_plot) * bin_size * sample_size
+        x_plot = np.linspace(x_min, x_max, 100)
+        y_pred = df.iloc[0, :].at['Dist_frozen'].pdf(x_plot) * bin_size * n
         fig, ax = plt.subplots(figsize=figsize)
         ax.hist(x, bins=bins, density=False, alpha=.4, label='Histogram (sample)')
         ax.plot(x_plot, y_pred, 'r-.', lw=1.4, label=best_dist)
@@ -149,9 +149,9 @@ def fal(
         * 'Right-skewed Gumbel': stats.gumbel_r,
         * 'Weibull Minimum Extreme Value': stats.weibull_min\n
     3. In the function:
-        * F(x) = P{X <= x|X >= 0} -> The cdf of X >= 0
-        * F*(x) = P{X <= x|X > 0} -> The cdf of X > 0
-        * 1 - F(x) = k[1 - F*(x)], where k = P{X > 0}, i.e., proportion of non-zero values
+        * F(x) = P{X <= x | X >= 0} -> The cdf of X >= 0
+        * F*(x) = P{X <= x | X > 0} -> The cdf of X > 0
+        * 1 - F(x) = k[1 - F*(x)], where k = P{X > 0}, i.e., the fraction of non-zero values
 
     References
     ----------
@@ -182,13 +182,13 @@ def fal(
         {'Dist_frozen': '', 'shape': '', 'loc': np.nan, 'scale': np.nan, 'SSE': np.nan},
         index=dists.keys()
     )
-    sample_size, init_loc, init_scale = x.size, x.mean(), x.std()
+    n, (x_min, x_max), x_mean, x_var, *_ = stats.describe(x)
     for name, dist in dists.items():
-        *shape, loc, scale = dist.fit(data=x, loc=init_loc, scale=init_scale)
+        *shape, loc, scale = dist.fit(data=x, loc=x_mean, scale=x_var**.5)
         df.at[name, 'shape'] = shape
         df.loc[name, ['loc', 'scale']] = loc, scale
         dist_frozen = dist(*shape, loc=loc, scale=scale)
-        freq_pred = dist_frozen.pdf(x_mid) * bin_size * sample_size
+        freq_pred = dist_frozen.pdf(x_mid) * bin_size * n
         df.at[name, 'Dist_frozen'] = dist_frozen
         df.at[name, 'SSE'] = ((freq - freq_pred) ** 2).sum()
         res_df = res_df.join(pd.DataFrame({name: dist_frozen.ppf(cdf_non_zero)}))
@@ -197,11 +197,11 @@ def fal(
     if graph:
         colors = ('k', 'm', 'b', 'r', 'g')
         markers = ('.', '1', '2', '3', '4')
-        x_plot = np.linspace(x.min(), x.max(), 100)
+        x_plot = np.linspace(x_min, x_max, 100)
         fig, ax = plt.subplots(figsize=figsize)
         ax.hist(x, bins=bins, density=False, alpha=.4)
         for (i, r), color, marker in zip(df.iterrows(), colors, markers):
-            y_pred = r['Dist_frozen'].pdf(x_plot) * bin_size * sample_size
+            y_pred = r['Dist_frozen'].pdf(x_plot) * bin_size * n
             ax.plot(x_plot, y_pred, f'{marker}-.{color}', lw=.4, ms=6, alpha=.5, label=i)
         ax.set_xlabel(xlabel, fontsize=12)
         ax.set_ylabel('Frequency', fontsize=12)
