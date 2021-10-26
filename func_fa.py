@@ -14,7 +14,7 @@ pd.set_option('display.max_columns', None)
 
 def fah(
         x: Union[Sequence[float], np.ndarray, pd.Series],
-        bins: int = 10,
+        bins: int = round(1 + 3.3*np.log10(len(x))),
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
         xlabel: str = ''
@@ -109,7 +109,7 @@ def fah(
 
 def fal(
         x: Union[Sequence[float], np.ndarray, pd.Series],
-        bins: int = 10,
+        bins: int = round(1 + 3.3*np.log10(len(x))),
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
         xlabel: str = ''
