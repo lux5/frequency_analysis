@@ -14,10 +14,10 @@ pd.set_option('display.max_columns', None)
 
 def fah(
         x: Union[Sequence[float], np.ndarray, pd.Series],
-        bins: int = round(1 + 3.3*np.log10(len(x))),
+        bins: int = None,
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
-        xlabel: str = ''
+        xlabel: str = '',
     ) -> Union[mpl.figure.Figure, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     **F**requency **A**nalisys for **H**igh values (fah)
@@ -26,7 +26,7 @@ def fah(
     ----------
     x : array-like (1d)
         One dimensional array-like of float type
-    bins : int, default=10
+    bins : int, default=None, meaning `round(1 + 3.3*np.log10(len(x)))`
         The number of equal-width bins in the range.
     graph : bool, default=True
         Output as a figure (True), a tuple of two DataFrames otherwise.
@@ -61,6 +61,8 @@ def fah(
     https://docs.scipy.org/doc/scipy/reference/reference/stats.html
     """
     x = np.array(x)
+    if bins is None:
+        bins = round(1 + 3.3*np.log10(len(x)))
     freq, brk = np.histogram(x, bins=bins)
     bin_size = np.diff(brk).mean()
     x_mid = (brk + np.roll(brk, shift=-1))[:-1] / 2
@@ -109,10 +111,10 @@ def fah(
 
 def fal(
         x: Union[Sequence[float], np.ndarray, pd.Series],
-        bins: int = round(1 + 3.3*np.log10(len(x))),
+        bins: int = None,
         graph: bool = True,
         figsize: Tuple[float, float] = (11, 6),
-        xlabel: str = ''
+        xlabel: str = '',
     ) -> Union[mpl.figure.Figure, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     **F**requency **A**nalisys for **L**ow values (fal)
@@ -121,7 +123,7 @@ def fal(
     ----------
     x : array-like (1d)
         One dimensional array-like of float type
-    bins : int, default=10
+    bins : int, default=None, meaning `round(1 + 3.3*np.log10(len(x)))`
         The number of equal-width bins in the range.
     graph : bool, default=True
         Output as a figure (True), a tuple of two DataFrames otherwise.
@@ -164,6 +166,8 @@ def fal(
     ref['k>='] = ref.eval('(`Annual return period` - 1) / `Annual return period`')
     ref['F(x)'] = ref.eval('1 / `Annual return period`')
     ref['F*(x)'] = ref.eval('(1 / `Annual return period` - 1 + @k) / @k')
+    if bins is None:
+        bins = round(1 + 3.3*np.log10(len(x)))
     freq, brk = np.histogram(x, bins=bins)
     bin_size = np.diff(brk).mean()
     x_mid = (brk + np.roll(brk, shift=-1))[:-1] / 2
